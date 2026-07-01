@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SpendSense — Intelligent Spend Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --border:#2a3441;
+    --ink:#e6edf3; --muted:#8b97a8; --accent:#5ee6a8; --accent-2:#4f8cff;
+    --warn:#ff6b6b; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Segoe UI',Roboto,-apple-system,sans-serif;
+    padding:32px 28px 60px;}
+  .wrap{max-width:1180px;margin:0 auto;}
+  header{display:flex;justify-content:space-between;align-items:flex-end;
+    flex-wrap:wrap;gap:16px;margin-bottom:28px;}
+  h1{margin:0;font-size:28px;letter-spacing:-.02em;}
+  h1 span{color:var(--accent);}
+  .sub{color:var(--muted);font-size:14px;margin-top:6px;}
+  .badge{display:inline-flex;align-items:center;gap:6px;
+    background:var(--panel-2);border:1px solid var(--border);
+    padding:6px 12px;border-radius:999px;font-size:13px;color:var(--muted);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);}
+  .badge-ai{display:inline-flex;align-items:center;gap:6px;
+    padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.05em;}
+  .badge-ai.active{
+    background:linear-gradient(135deg,rgba(94,230,168,.2),rgba(79,140,255,.2));
+    border:1px solid var(--accent);color:var(--accent);
+    box-shadow:0 0 10px rgba(94,230,168,.15);
+    animation:pulse-glow 2s infinite alternate;}
+  .badge-ai.fallback{background:var(--panel-2);border:1px solid var(--border);color:var(--muted);}
+  @keyframes pulse-glow{
+    0%{box-shadow:0 0 5px rgba(94,230,168,.1);}
+    100%{box-shadow:0 0 12px rgba(94,230,168,.3);}}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+  .stat{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;}
+  .stat .label{color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;}
+  .stat .value{font-size:26px;font-weight:700;margin-top:6px;}
+  .stat .value.warn{color:var(--warn);}
+  .stat .value.good{color:var(--accent);}
+  .insight{
+    background:linear-gradient(135deg,rgba(94,230,168,.10),rgba(79,140,255,.08));
+    border:1px solid rgba(94,230,168,.35);border-radius:var(--radius);
+    padding:20px 22px;margin-bottom:24px;line-height:1.55;font-size:15px;}
+  .insight .tag{display:inline-block;font-size:11.5px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--accent);margin-bottom:8px;font-weight:700;}
+  .row{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-bottom:18px;}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+  .panel h3{margin:0 0 14px;font-size:15px;color:var(--muted);font-weight:600;
+    text-transform:uppercase;letter-spacing:.04em;}
+  canvas{max-height:280px;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;}
+  td.amount{color:var(--warn);font-weight:600;}
+  td.z{color:var(--muted);}
+  .accel-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .accel-note{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5;}
+  footer{margin-top:30px;color:var(--muted);font-size:12.5px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>Spend<span>Sense</span></h1>
+      <div class="sub">Real-time intelligent spend insights — from raw transactions to decisions, not just charts.</div>
+    </div>
+    <div class="badge">
+      <span class="dot"></span>
+      Engine: <strong id="engineLabel">—</strong> &nbsp;·&nbsp; <span id="rowLabel">—</span> rows processed
+    </div>
+  </header>
+
+  <div class="insight">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="tag" style="margin-bottom:0;">Auto-generated insight</div>
+      <div id="insightBadge" class="badge-ai">—</div>
+    </div>
+    <div id="insightText" style="white-space:pre-wrap;">Loading…</div>
+    <div id="insightHelp" style="display:none;font-size:12px;color:var(--muted);
+      margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);line-height:1.55;">
+      💡 <strong>Want real AI-powered insights?</strong> Add a <code>GEMINI_API_KEY</code>
+      repository secret (Settings → Secrets → Actions) and redeploy.
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="stat"><div class="label">Total Spend Tracked</div><div class="value" id="totalSpend">—</div></div>
+    <div class="stat"><div class="label">Next Month Forecast</div><div class="value good" id="forecast">—</div></div>
+    <div class="stat"><div class="label">Anomalies Flagged</div><div class="value warn" id="anomalyCount">—</div></div>
+    <div class="stat"><div class="label">Pipeline Time (CPU)</div><div class="value" id="pipeTime">—</div></div>
+  </div>
+
+  <div class="row">
+    <div class="panel">
+      <h3>Monthly Spend Trend &amp; Forecast</h3>
+      <canvas id="trendChart"></canvas>
+    </div>
+    <div class="panel">
+      <h3>Spend by Category</h3>
+      <canvas id="catChart"></canvas>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:18px;">
+    <h3>Top Flagged Anomalies (review these first)</h3>
+    <table>
+      <thead><tr><th>Date</th><th>Merchant</th><th>Category</th><th>Amount</th><th>Z-score</th></tr></thead>
+      <tbody id="anomalyBody"></tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h3>NVIDIA Acceleration Benchmark — pandas (CPU) vs cudf.pandas (GPU)</h3>
+    <div class="accel-row">
+      <canvas id="benchChart"></canvas>
+      <div>
+        <table>
+          <thead><tr><th>Rows</th><th>CPU Time (s)</th></tr></thead>
+          <tbody id="benchBody"></tbody>
+        </table>
+        <div class="accel-note">
+          Pipeline time (clean + anomaly detection + forecast) at increasing dataset scale,
+          measured on plain pandas (CPU). The identical code runs unchanged under
+          <code>cudf.pandas</code> on a GPU runtime for a direct speedup comparison —
+          see <code>notebooks/gpu_benchmark.ipynb</code> on Colab T4/A100.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>SpendSense · Built for Gen AI Academy APAC 2026 — Cohort 2 · Google Cloud + NVIDIA acceleration track</footer>
+</div>
+
+<script>
+const RESULTS   = {"engine": "pandas (CPU)", "row_count": 600000, "timings": {"clean_seconds": 0.7509, "anomaly_detection_seconds": 0.2727, "forecast_seconds": 0.0423, "total_seconds": 1.0659}, "total_spend": 1106336040.97, "category_breakdown": {"Transfers": 241989309.33, "Rent": 237728000.0, "Shopping": 218547743.66, "Bills & Utilities": 114918963.92, "Groceries": 110896784.95, "Health": 74694535.12, "Entertainment": 38740975.19, "Food & Dining": 36839138.16, "Subscriptions": 16562853.79, "Transport": 15417736.85}, "monthly_trend": [{"month": "2025-07", "amount": 94810226.88}, {"month": "2025-08", "amount": 94039646.03}, {"month": "2025-09", "amount": 91023370.36}, {"month": "2025-10", "amount": 94621698.13}, {"month": "2025-11", "amount": 90321082.42}, {"month": "2025-12", "amount": 94550472.27}, {"month": "2026-01", "amount": 93813340.27}, {"month": "2026-02", "amount": 84472228.4}, {"month": "2026-03", "amount": 93808838.4}, {"month": "2026-04", "amount": 91848820.65}, {"month": "2026-05", "amount": 93377207.33}, {"month": "2026-06", "amount": 89649109.83}], "forecast_next_month": 90392304.71, "anomaly_count": 1540, "top_anomalies": [{"txn_id": 599964, "timestamp": "2025-07-21 10:40:12", "merchant": "BookMyShow", "category": "Entertainment", "amount": 22193.16, "z_score": 5.29}, {"txn_id": 599980, "timestamp": "2025-10-11 21:02:12", "merchant": "Flipkart", "category": "Shopping", "amount": 72779.49, "z_score": 4.78}, {"txn_id": 599990, "timestamp": "2026-05-02 11:47:06", "merchant": "Unknown Merchant", "category": "Health", "amount": 58802.25, "z_score": 4.73}, {"txn_id": 599997, "timestamp": "2026-06-30 09:34:41", "merchant": "Apollo Pharmacy", "category": "Health", "amount": 54865.48, "z_score": 4.64}, {"txn_id": 599993, "timestamp": "2026-06-23 21:46:15", "merchant": "Netflix", "category": "Entertainment", "amount": 14420.57, "z_score": 4.63}, {"txn_id": 599989, "timestamp": "2025-10-18 21:00:00", "merchant": "Local Store", "category": "Shopping", "amount": 64431.61, "z_score": 4.62}, {"txn_id": 599983, "timestamp": "2026-01-24 02:57:10", "merchant": "Spotify", "category": "Entertainment", "amount": 13838.53, "z_score": 4.57}, {"txn_id": 599965, "timestamp": "2026-04-18 08:02:41", "merchant": "Local Store", "category": "Shopping", "amount": 61282.98, "z_score": 4.55}, {"txn_id": 599966, "timestamp": "2025-12-05 04:14:02", "merchant": "Netflix", "category": "Entertainment", "amount": 13548.71, "z_score": 4.54}, {"txn_id": 599970, "timestamp": "2026-01-24 13:25:49", "merchant": "Unknown Merchant", "category": "Health", "amount": 49627.17, "z_score": 4.51}, {"txn_id": 599968, "timestamp": "2026-02-16 03:55:40", "merchant": "Netflix", "category": "Entertainment", "amount": 13085.44, "z_score": 4.49}, {"txn_id": 599974, "timestamp": "2026-03-22 14:38:16", "merchant": "Unknown Merchant", "category": "Shopping", "amount": 57259.27, "z_score": 4.46}, {"txn_id": 599998, "timestamp": "2025-07-29 15:27:02", "merchant": "PharmEasy", "category": "Health", "amount": 43077.69, "z_score": 4.32}, {"txn_id": 599984, "timestamp": "2026-06-25 09:03:43", "merchant": "Unknown Merchant", "category": "Health", "amount": 40031.61, "z_score": 4.22}, {"txn_id": 599971, "timestamp": "2025-08-06 09:58:17", "merchant": "Myntra", "category": "Shopping", "amount": 45890.85, "z_score": 4.16}], "insight_text": "Your top spending category is Transfers at \u20b9241,989,309 total over the period. Last month's total was \u20b989,649,110; the trend looks rising, with next month forecast at \u20b990,392,305. 1540 unusual transactions were flagged \u2014 worth a manual review.\n\n\ud83d\udca1 Recommendation: Review your top anomalies to identify potential subscription leaks or unexpected double charges.", "insight_source": "Rule-based Engine"};
+const BENCHMARK = {"engine": "pandas (CPU)", "results": [{"rows": 10000, "engine": "pandas (CPU)", "wall_clock_seconds": 0.0334, "pipeline_timings": {"clean_seconds": 0.0191, "anomaly_detection_seconds": 0.0062, "forecast_seconds": 0.0021, "total_seconds": 0.0274}}, {"rows": 100000, "engine": "pandas (CPU)", "wall_clock_seconds": 0.1802, "pipeline_timings": {"clean_seconds": 0.1312, "anomaly_detection_seconds": 0.0248, "forecast_seconds": 0.008, "total_seconds": 0.164}}, {"rows": 600000, "engine": "pandas (CPU)", "wall_clock_seconds": 1.1448, "pipeline_timings": {"clean_seconds": 0.7509, "anomaly_detection_seconds": 0.2727, "forecast_seconds": 0.0423, "total_seconds": 1.0659}}]};
+
+document.getElementById('engineLabel').textContent  = RESULTS.engine;
+document.getElementById('rowLabel').textContent     = RESULTS.row_count.toLocaleString();
+document.getElementById('insightText').textContent  = RESULTS.insight_text;
+document.getElementById('totalSpend').textContent   = '₹' + Math.round(RESULTS.total_spend).toLocaleString('en-IN');
+document.getElementById('forecast').textContent     = RESULTS.forecast_next_month
+  ? '₹' + Math.round(RESULTS.forecast_next_month).toLocaleString('en-IN') : 'N/A';
+document.getElementById('anomalyCount').textContent = RESULTS.anomaly_count.toLocaleString();
+document.getElementById('pipeTime').textContent     = RESULTS.timings.total_seconds + 's';
+
+const source = RESULTS.insight_source || 'Rule-based Engine';
+const badge  = document.getElementById('insightBadge');
+const help   = document.getElementById('insightHelp');
+badge.textContent = source === 'Rule-based Engine' ? 'Rule Fallback' : '✨ AI Powered';
+badge.className   = 'badge-ai ' + (source === 'Rule-based Engine' ? 'fallback' : 'active');
+help.style.display = source === 'Rule-based Engine' ? 'block' : 'none';
+
+const grid = '#2a3441', muted = '#8b97a8';
+Chart.defaults.color = muted;
+Chart.defaults.borderColor = grid;
+
+// Trend chart
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: RESULTS.monthly_trend.map(m => m.month).concat(['forecast']),
+    datasets: [{
+      label: 'Monthly Spend (₹)',
+      data: RESULTS.monthly_trend.map(m => m.amount).concat([RESULTS.forecast_next_month]),
+      borderColor: '#4f8cff', backgroundColor: 'rgba(79,140,255,.12)',
+      fill: true, tension: .35, pointRadius: 3,
+      segment: {
+        borderDash: ctx => ctx.p1DataIndex === RESULTS.monthly_trend.length ? [6,4] : undefined
+      }
+    }]
+  },
+  options: { plugins:{legend:{display:false}}, scales:{ x:{grid:{color:grid}}, y:{grid:{color:grid}} } }
+});
+
+// Category chart
+const catEntries = Object.entries(RESULTS.category_breakdown);
+new Chart(document.getElementById('catChart'), {
+  type: 'doughnut',
+  data: {
+    labels: catEntries.map(e => e[0]),
+    datasets: [{
+      data: catEntries.map(e => e[1]),
+      backgroundColor: ['#5ee6a8','#4f8cff','#ffb454','#ff6b6b','#b38bff',
+                        '#54d3ff','#ffd166','#7ee787','#ff9ecf','#a0aec0']
+    }]
+  },
+  options: { plugins:{legend:{position:'right', labels:{boxWidth:10,font:{size:11}}}} }
+});
+
+// Anomaly table
+const tbody = document.getElementById('anomalyBody');
+RESULTS.top_anomalies.forEach(a => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${a.timestamp.split('T')[0]}</td><td>${a.merchant}</td>
+                  <td>${a.category}</td>
+                  <td class="amount">₹${Math.round(a.amount).toLocaleString('en-IN')}</td>
+                  <td class="z">${a.z_score}</td>`;
+  tbody.appendChild(tr);
+});
+
+// Benchmark
+const benchRows = BENCHMARK.results;
+new Chart(document.getElementById('benchChart'), {
+  type: 'bar',
+  data: {
+    labels: benchRows.map(r => r.rows.toLocaleString()),
+    datasets: [{
+      label: 'Pipeline time (s) — ' + BENCHMARK.engine,
+      data: benchRows.map(r => r.wall_clock_seconds),
+      backgroundColor: '#5ee6a8'
+    }]
+  },
+  options: { plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false}}, y:{grid:{color:grid}} } }
+});
+const bbody = document.getElementById('benchBody');
+benchRows.forEach(r => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${r.rows.toLocaleString()}</td><td>${r.wall_clock_seconds}</td>`;
+  bbody.appendChild(tr);
+});
+</script>
+</body>
+</html>
