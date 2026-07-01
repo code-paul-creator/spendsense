@@ -4,7 +4,7 @@
 
 Built for **Gen AI Academy APAC 2026 — Cohort 2** (Hack2Skill × Google Cloud × NVIDIA), Hackathon Prototype Submission track: *Data Analytics, Visualization & Decision-Support*.
 
-Team: **DataPilot** — see [Team](#team).
+Team: **DataPilot** — see [Team](#Leader:Paulami_Bhosle)
 
 ---
 
@@ -130,6 +130,14 @@ To set up the API key locally:
 **DataPilot** .                         
 
 DataPilot is an agile squad in the Google Cloud Gen AI Academy APAC Edition. We leverage GCP and Gen AI to turn chaotic financial logs into predictive intelligence, redefining how organizations track, forecast, and protect their capital.
+
+**Memebers**
+Leader: Paulami Bhosle
+Swapnil Adlinge
+Nandha Kumar
+Manish Lawaniya
+
+---
 ## 8. Acknowledgements
 
 Built for the Gen AI Academy APAC 2026, Cohort 2 hackathon (Hack2Skill, Google Cloud, NVIDIA).
