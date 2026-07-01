@@ -2,101 +2,87 @@
 
 **Intelligent, real-time spend insights for individuals — not just another dashboard.**
 
-Built for **Gen AI Academy APAC 2026 — Cohort 2** (Hack2Skill × Google Cloud × NVIDIA).
-Hackathon track: *Data Analytics, Visualization & Decision-Support*.
-Team: **DataPilot** (solo build).
+Built for **Gen AI Academy APAC 2026 — Cohort 2** (Hack2Skill × Google Cloud × NVIDIA), Hackathon Prototype Submission track: *Data Analytics, Visualization & Decision-Support*.
 
-🔗 **[Live Demo →](https://code-paul-creator.github.io/spendsense/)**
+Team: **DataPilot** — see [Team](#team).
 
 ---
 
-## The Problem
+## 1. The Problem
 
-Most people never look closely at their transaction data until something goes wrong — an overspent month, a duplicate charge, an unexplained large debit. Bank/UPI apps show raw lists, but nobody manually scans hundreds of rows to:
+Most people never look closely at their own transaction data until something goes wrong — an overspend, a duplicate charge, an unexplained large debit. Bank/UPI apps show raw transaction lists, but nobody has time to manually scan hundreds of rows a month to:
 
-- spot **which transactions are unusual** for them specifically,
-- know **where spend is trending** category by category, and
-- get a **forward-looking forecast** instead of just a backward-looking statement.
+- spot **which transactions are unusual** for them, specifically (not just "large" in absolute terms),
+- know **where their spend is trending** category by category, and
+- get a **forward-looking number** ("you're on track to spend ₹X next month") instead of only a backward-looking statement.
 
-**Real user**: anyone managing a personal or household budget — students, professionals, shared households.
+**Real user**: anyone managing a personal or household budget — students, young professionals, or small shared households tracking monthly spend.
 
-**Decision it supports**: *"Should I cut spending this month, and where exactly?"* — backed by anomaly flags, a category breakdown, and a next-month forecast, not gut feeling.
+**Decision it supports**: *"Should I cut spending this month, and where exactly?"* — backed by flagged anomalies, a category breakdown, and a next-month forecast, instead of a gut feeling.
 
-The cohort brief explicitly calls for *"moving from static dashboards to real-time, intelligent insights."* SpendSense does exactly that: it doesn't just chart data, it **writes a plain-English summary of what the data means**, powered by Gemini 2.5 Flash.
+The cohort brief explicitly asks for *"moving from static dashboards to real-time, intelligent insights."* SpendSense's headline feature is exactly that: it doesn't just chart the data, it **writes a plain-English summary of what the data means** for the user, on top of the dashboard.
 
 ---
 
-## Pipeline
+## 2. Pipeline (Ingest → Clean → Analyze → Model → Insight → Output)
 
 | Stage | What happens | File |
 |---|---|---|
-| **Ingest** | Read transactions CSV. In production: Cloud Storage. | `generate_data.py` |
-| **Clean** | Dedupe, drop nulls, normalize amounts/dates/categories. In production: BigQuery. | `pipeline.py` |
-| **Analyze** | Per-category monthly aggregation, total spend. | `pipeline.py` |
-| **Model** | Z-score anomaly detection (log-transformed) + linear-trend forecast. | `pipeline.py` |
-| **Insight** | Gemini 2.5 Flash plain-English narrative (with rule-based fallback). | `pipeline.py` |
-| **Output** | `results.json` → `dashboard.html` (charts, anomaly table, forecast, narrative). | `build_dashboard.py` |
+| **Ingest** | Read a transactions CSV (bank/UPI export). In production: object dropped in **Cloud Storage**. | `generate_data.py` (synthetic data stand-in) |
+| **Clean** | Dedupe, drop nulls, type-fix amounts/dates, normalize categories. In production: a **BigQuery** SQL/dbt cleaning step. | `pipeline.py :: load_and_clean()` |
+| **Analyze** | Per-category monthly aggregation, total spend. | `pipeline.py :: category_breakdown()` |
+| **Model** | Per-category z-score anomaly detection (log-transformed, robust to right-skew) + linear-trend forecast for next month's total spend. | `pipeline.py :: detect_anomalies()`, `forecast_next_month()` |
+| **Insight** | Plain-English narrative generated from the aggregated stats (templated in the prototype; designed as a drop-in slot for a **Gemini** call — see below). | `pipeline.py :: build_insight_text()` |
+| **Output** | `results.json` → rendered into `dashboard.html` (charts, anomaly table, forecast, narrative). | `dashboard.html` |
 
-**Run locally:**
+Run it yourself:
+
 ```bash
 pip install -r requirements.txt
-python generate_data.py      # generates 600K synthetic transactions
-python pipeline.py           # clean → detect → forecast → insight (uses GEMINI_API_KEY if set)
-python benchmark.py          # records CPU timings at 10K/100K/600K rows
-python build_dashboard.py    # builds dashboard.html
-open dashboard.html
+python3 generate_data.py      # generates transactions.csv (600K synthetic rows)
+python3 pipeline.py           # runs the pipeline, writes results.json (uses GEMINI_API_KEY from env if present)
+python3 build_dashboard.py    # embeds results.json into dashboard.html
+open dashboard.html           # or just double-click it
 ```
+## 3. Google Cloud Mapping
+
+This prototype runs locally so it can be judged without cloud credentials, but it is architected 1:1 onto Google Cloud's data + application layer:
+
+- **Cloud Storage** — raw transaction CSVs land here as the ingest point.
+- **BigQuery** — the clean/aggregate/anomaly-scoring SQL would run here at production scale (the `pipeline.py` logic mirrors what a BigQuery scheduled query + scheduled stored procedure would do).
+- **Looker / Looker Studio** — `dashboard.html` is a stand-in for a Looker dashboard; the same `results.json` schema maps directly onto Looker data sources/fields.
+- **Gemini Enterprise Agent Platform** — the `build_insight_text()` function is intentionally isolated so its body can be swapped for a real Gemini API call (prompt: pass `category_breakdown`, `monthly_trend`, and `top_anomalies` as context, ask for a 2–3 sentence plain-English summary + one actionable recommendation). This is the "real-time intelligent insight" layer the cohort brief calls for, not just a static chart.
+
+*(2+ Google Cloud services used: Cloud Storage + BigQuery + Looker, satisfying the requirement.)*
 
 ---
 
-## Google Cloud Mapping
+## 4. NVIDIA Acceleration
 
-| GCP Service | Role in SpendSense |
-|---|---|
-| **Cloud Storage** | Raw transaction CSV ingest point |
-| **BigQuery** | Clean/aggregate/anomaly-score SQL at production scale |
-| **Looker / Looker Studio** | `dashboard.html` maps directly onto Looker data sources |
-| **Gemini Enterprise Agent Platform** | `build_insight_text()` calls Gemini 2.5 Flash for the intelligent narrative layer |
+The pipeline is written in plain pandas so it runs anywhere — but it is **zero-code-change compatible with `cudf.pandas`**, NVIDIA RAPIDS' GPU accelerator for pandas.
 
----
+- **CPU baseline (this repo, as submitted)**: `benchmark.py` runs the full pipeline at 10K / 100K / 600K rows. Measured locally:
 
-## NVIDIA Acceleration
+  | Rows | Pipeline time (pandas / CPU) |
+  |---|---|
+  | 10,000 | 0.033 s |
+  | 100,000 | 0.171 s |
+  | 600,000 | 1.101 s |
 
-The pipeline is written in plain pandas — but is **zero-code-change compatible with `cudf.pandas`** (NVIDIA RAPIDS GPU accelerator).
+- **GPU run**: open `notebooks/gpu_benchmark.ipynb` on a Colab GPU runtime (or any NVIDIA-GPU machine with RAPIDS installed) and run:
 
-**CPU baseline:**
+  ```bash
+  pip install cudf-cu12 --extra-index-url=https://pypi.nvidia.com
+  python3 -m cudf.pandas benchmark.py
+  ```
 
-| Rows | Pipeline time (pandas / CPU) |
-|---|---|
-| 10,000 | 0.033 s |
-| 100,000 | 0.171 s |
-| 600,000 | 1.101 s |
+  This re-runs the **identical script**, unmodified, on the GPU via `cudf.pandas`. Drop the resulting `benchmark.json` next to the CPU one and the numbers compare directly — that's the acceleration evidence for judging.
 
-**GPU run** (Colab T4/A100 or GCP VM with RAPIDS):
-```bash
-pip install cudf-cu12 --extra-index-url=https://pypi.nvidia.com
-python3 -m cudf.pandas benchmark.py
-```
-Identical script, no code changes, runs on GPU — direct apples-to-apples speedup comparison.
+*(Satisfies the NVIDIA layer requirement via `cudf.pandas`; architecture also scales cleanly to RAPIDS Accelerator for Apache Spark / GKE if the dataset grows beyond a single-node workload.)*
 
 ---
 
-## Gemini AI Live Insights
-
-`pipeline.py` auto-detects `GEMINI_API_KEY` from environment:
-- **Key present** → calls Gemini 2.5 Flash, generates a personalized narrative + recommendation → **✨ AI Powered** badge.
-- **No key** → falls back to rule-based template → **Rule Fallback** badge. Pipeline still works fully.
-
-**To enable locally:** create a `.env` file at the repo root:
-```env
-GEMINI_API_KEY=AIzaSy...your_key...
-```
-
-**To enable on GitHub Pages:** Settings → Secrets and variables → Actions → New repository secret → `GEMINI_API_KEY`.
-
----
-
-## Repo Structure
+## 5. What's in this repo
 
 ```
 spendsense/
@@ -118,13 +104,34 @@ spendsense/
 
 ---
 
-## GitHub Pages Deployment
+## 6. Gemini AI Live Insights
 
-1. Push this repo to GitHub.
-2. Go to Settings → Pages → Source → **GitHub Actions** → Save.
-3. Add `GEMINI_API_KEY` secret (optional, for live AI insights).
-4. Push any commit to `main` — the workflow auto-runs and deploys.
+SpendSense now has a **zero-dependency live Gemini API integration** built directly into `pipeline.py`.
+
+<img width="750" height="350" alt="image" src="https://github.com/user-attachments/assets/b53beda6-9bc9-46b8-b798-862cf427f4d2" />
+
+It automatically scans for a `GEMINI_API_KEY` environment variable (either from your system environment, a local `.env` file, or GitHub Secrets).
+- **If the API key is present**: It queries `gemini-2.5-flash` to construct a dynamic, personalized spending narrative and custom recommendation. The dashboard displays a glowing **[AI Powered]** badge.
+- **If no API key is set**: It gracefully falls back to the deterministic rule-based template engine and displays a **[Rule Fallback]** badge, allowing local judges to run the pipeline out-of-the-box.
+
+To set up the API key locally:
+1. Create a `.env` file inside the `spendsense/` directory:
+   ```env
+   GEMINI_API_KEY=AIzaSy...your_gemini_key...
+   ```
+2. Re-run `python pipeline.py && python build_dashboard.py`.
 
 ---
 
-*Built for Gen AI Academy APAC 2026, Cohort 2 — Hack2Skill × Google Cloud × NVIDIA.*
+## 7. Team
+
+<img width="90" height="79" alt="image" src="https://github.com/user-attachments/assets/2a55b3f5-efd0-4432-9f59-bc86923dc9fb" />
+
+**DataPilot** .                         
+
+DataPilot is an agile squad in the Google Cloud Gen AI Academy APAC Edition. We leverage GCP and Gen AI to turn chaotic financial logs into predictive intelligence, redefining how organizations track, forecast, and protect their capital.
+## 8. Acknowledgements
+
+Built for the Gen AI Academy APAC 2026, Cohort 2 hackathon (Hack2Skill, Google Cloud, NVIDIA).
+
+---
