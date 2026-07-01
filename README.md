@@ -6,7 +6,7 @@ Built for **Gen AI Academy APAC 2026 — Cohort 2** (Hack2Skill × Google Cloud 
 
 Team: **DataPilot** — see [Team](#team--datapilot)
 
-🔗 **[Live Demo →](https://code-paul-creator.github.io/spendsense/)**
+> 🚀 **[Click here to view the Live Demo](https://code-paul-creator.github.io/spendsense/)** — *Real-time intelligent spend insights, powered by Google Cloud + NVIDIA*
 
 ---
 
