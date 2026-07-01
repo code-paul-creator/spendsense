@@ -6,6 +6,8 @@ Built for **Gen AI Academy APAC 2026 — Cohort 2** (Hack2Skill × Google Cloud 
 
 Team: **DataPilot** — see [Team](#Leader:Paulami_Bhosle)
 
+🔗 **[Live Demo →](https://code-paul-creator.github.io/spendsense/)**
+
 ---
 
 ## 1. The Problem
