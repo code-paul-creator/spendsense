@@ -4,7 +4,7 @@
 
 Built for **Gen AI Academy APAC 2026 — Cohort 2** (Hack2Skill × Google Cloud × NVIDIA), Hackathon Prototype Submission track: *Data Analytics, Visualization & Decision-Support*.
 
-Team: **DataPilot** — see [Team](#Leader:Paulami_Bhosle)
+Team: **DataPilot** — see [Team](#team--datapilot)
 
 🔗 **[Live Demo →](https://code-paul-creator.github.io/spendsense/)**
 
@@ -129,15 +129,16 @@ To set up the API key locally:
 
 <img width="90" height="79" alt="image" src="https://github.com/user-attachments/assets/2a55b3f5-efd0-4432-9f59-bc86923dc9fb" />
 
-**DataPilot** .                         
+## Team — DataPilot
 
-DataPilot is an agile squad in the Google Cloud Gen AI Academy APAC Edition. We leverage GCP and Gen AI to turn chaotic financial logs into predictive intelligence, redefining how organizations track, forecast, and protect their capital.
+> *An agile squad in the Google Cloud Gen AI Academy APAC Edition. We leverage GCP and Gen AI to turn chaotic financial logs into predictive intelligence, redefining how organizations track, forecast, and protect their capital.*
 
-**Memebers**
-Leader: Paulami Bhosle
-Swapnil Adlinge
-Nandha Kumar
-Manish Lawaniya
+| Role | Name |
+|---|---|
+| 👑 Team Leader | Paulami Bhosle |
+| 🛠️ Member | Swapnil Adlinge |
+| 🛠️ Member | Nandha Kumar |
+| 🛠️ Member | Manish Lawaniya |
 
 ---
 ## 8. Acknowledgements
