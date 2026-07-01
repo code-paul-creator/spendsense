@@ -1,0 +1,199 @@
+{
+  "engine": "pandas (CPU)",
+  "row_count": 600000,
+  "timings": {
+    "clean_seconds": 0.7509,
+    "anomaly_detection_seconds": 0.2727,
+    "forecast_seconds": 0.0423,
+    "total_seconds": 1.0659
+  },
+  "total_spend": 1106336040.97,
+  "category_breakdown": {
+    "Transfers": 241989309.33,
+    "Rent": 237728000.0,
+    "Shopping": 218547743.66,
+    "Bills & Utilities": 114918963.92,
+    "Groceries": 110896784.95,
+    "Health": 74694535.12,
+    "Entertainment": 38740975.19,
+    "Food & Dining": 36839138.16,
+    "Subscriptions": 16562853.79,
+    "Transport": 15417736.85
+  },
+  "monthly_trend": [
+    {
+      "month": "2025-07",
+      "amount": 94810226.88
+    },
+    {
+      "month": "2025-08",
+      "amount": 94039646.03
+    },
+    {
+      "month": "2025-09",
+      "amount": 91023370.36
+    },
+    {
+      "month": "2025-10",
+      "amount": 94621698.13
+    },
+    {
+      "month": "2025-11",
+      "amount": 90321082.42
+    },
+    {
+      "month": "2025-12",
+      "amount": 94550472.27
+    },
+    {
+      "month": "2026-01",
+      "amount": 93813340.27
+    },
+    {
+      "month": "2026-02",
+      "amount": 84472228.4
+    },
+    {
+      "month": "2026-03",
+      "amount": 93808838.4
+    },
+    {
+      "month": "2026-04",
+      "amount": 91848820.65
+    },
+    {
+      "month": "2026-05",
+      "amount": 93377207.33
+    },
+    {
+      "month": "2026-06",
+      "amount": 89649109.83
+    }
+  ],
+  "forecast_next_month": 90392304.71,
+  "anomaly_count": 1540,
+  "top_anomalies": [
+    {
+      "txn_id": 599964,
+      "timestamp": "2025-07-21 10:40:12",
+      "merchant": "BookMyShow",
+      "category": "Entertainment",
+      "amount": 22193.16,
+      "z_score": 5.29
+    },
+    {
+      "txn_id": 599980,
+      "timestamp": "2025-10-11 21:02:12",
+      "merchant": "Flipkart",
+      "category": "Shopping",
+      "amount": 72779.49,
+      "z_score": 4.78
+    },
+    {
+      "txn_id": 599990,
+      "timestamp": "2026-05-02 11:47:06",
+      "merchant": "Unknown Merchant",
+      "category": "Health",
+      "amount": 58802.25,
+      "z_score": 4.73
+    },
+    {
+      "txn_id": 599997,
+      "timestamp": "2026-06-30 09:34:41",
+      "merchant": "Apollo Pharmacy",
+      "category": "Health",
+      "amount": 54865.48,
+      "z_score": 4.64
+    },
+    {
+      "txn_id": 599993,
+      "timestamp": "2026-06-23 21:46:15",
+      "merchant": "Netflix",
+      "category": "Entertainment",
+      "amount": 14420.57,
+      "z_score": 4.63
+    },
+    {
+      "txn_id": 599989,
+      "timestamp": "2025-10-18 21:00:00",
+      "merchant": "Local Store",
+      "category": "Shopping",
+      "amount": 64431.61,
+      "z_score": 4.62
+    },
+    {
+      "txn_id": 599983,
+      "timestamp": "2026-01-24 02:57:10",
+      "merchant": "Spotify",
+      "category": "Entertainment",
+      "amount": 13838.53,
+      "z_score": 4.57
+    },
+    {
+      "txn_id": 599965,
+      "timestamp": "2026-04-18 08:02:41",
+      "merchant": "Local Store",
+      "category": "Shopping",
+      "amount": 61282.98,
+      "z_score": 4.55
+    },
+    {
+      "txn_id": 599966,
+      "timestamp": "2025-12-05 04:14:02",
+      "merchant": "Netflix",
+      "category": "Entertainment",
+      "amount": 13548.71,
+      "z_score": 4.54
+    },
+    {
+      "txn_id": 599970,
+      "timestamp": "2026-01-24 13:25:49",
+      "merchant": "Unknown Merchant",
+      "category": "Health",
+      "amount": 49627.17,
+      "z_score": 4.51
+    },
+    {
+      "txn_id": 599968,
+      "timestamp": "2026-02-16 03:55:40",
+      "merchant": "Netflix",
+      "category": "Entertainment",
+      "amount": 13085.44,
+      "z_score": 4.49
+    },
+    {
+      "txn_id": 599974,
+      "timestamp": "2026-03-22 14:38:16",
+      "merchant": "Unknown Merchant",
+      "category": "Shopping",
+      "amount": 57259.27,
+      "z_score": 4.46
+    },
+    {
+      "txn_id": 599998,
+      "timestamp": "2025-07-29 15:27:02",
+      "merchant": "PharmEasy",
+      "category": "Health",
+      "amount": 43077.69,
+      "z_score": 4.32
+    },
+    {
+      "txn_id": 599984,
+      "timestamp": "2026-06-25 09:03:43",
+      "merchant": "Unknown Merchant",
+      "category": "Health",
+      "amount": 40031.61,
+      "z_score": 4.22
+    },
+    {
+      "txn_id": 599971,
+      "timestamp": "2025-08-06 09:58:17",
+      "merchant": "Myntra",
+      "category": "Shopping",
+      "amount": 45890.85,
+      "z_score": 4.16
+    }
+  ],
+  "insight_text": "Your top spending category is Transfers at \u20b9241,989,309 total over the period. Last month's total was \u20b989,649,110; the trend looks rising, with next month forecast at \u20b990,392,305. 1540 unusual transactions were flagged \u2014 worth a manual review.\n\n\ud83d\udca1 Recommendation: Review your top anomalies to identify potential subscription leaks or unexpected double charges.",
+  "insight_source": "Rule-based Engine"
+}
