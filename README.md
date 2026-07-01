@@ -63,6 +63,9 @@ This prototype runs locally so it can be judged without cloud credentials, but i
 
 The pipeline is written in plain pandas so it runs anywhere — but it is **zero-code-change compatible with `cudf.pandas`**, NVIDIA RAPIDS' GPU accelerator for pandas.
 
+<img width="941" height="487" alt="image" src="https://github.com/user-attachments/assets/9baa3848-5987-445b-9b6c-c6b4c9010a19" />
+
+
 - **CPU baseline (this repo, as submitted)**: `benchmark.py` runs the full pipeline at 10K / 100K / 600K rows. Measured locally:
 
   | Rows | Pipeline time (pandas / CPU) |
